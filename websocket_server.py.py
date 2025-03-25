@@ -1,25 +1,27 @@
 import asyncio
 import websockets
 import json
+import os
 
-# WebSocket server function
+# Get the port from Render's environment (default to 10000)
+PORT = int(os.getenv("PORT", 10000))
+
 async def send_rotation(websocket, path):
-    angle = 0  # Initial rotation angle
+    angle = 0
     while True:
-        # Increase the rotation angle
         angle += 0.05
         if angle > 360:
             angle = 0  # Reset after full rotation
 
-        # Send rotation data to the client
-        data = json.dumps({"rotationY": angle})  # Send Y-axis rotation
+        # Send rotation data
+        data = json.dumps({"rotationY": angle})
         await websocket.send(data)
 
         await asyncio.sleep(0.05)  # Control rotation speed
 
-# Start the WebSocket server
-start_server = websockets.serve(send_rotation, "localhost", 8765)
+# Bind to the PORT (Render requires this)
+start_server = websockets.serve(send_rotation, "0.0.0.0", PORT)
 
-print("WebSocket Server Started on ws://localhost:8765")
+print(f"✅ WebSocket Server Running on ws://0.0.0.0:{PORT}")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
