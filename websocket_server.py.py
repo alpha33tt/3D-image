@@ -1,27 +1,25 @@
-import asyncio
-import websockets
+from flask import Flask
+from flask_sock import Sock
 import json
 import os
+import time
 
-# Get the port from the environment (Render default)
-PORT = int(os.getenv("PORT", 10000))  # Default port 10000
+app = Flask(__name__)
+sock = Sock(app)
 
-async def send_rotation(websocket, path):
+# WebSocket route
+@sock.route('/ws')
+def send_rotation(ws):
     angle = 0
     while True:
-        angle += 0.05  # Rotate step
+        angle += 0.05  # Rotation step
         if angle > 360:
-            angle = 0  # Reset rotation after full turn
-
+            angle = 0  # Reset after full turn
+        
         data = json.dumps({"rotationY": angle})
-        await websocket.send(data)
-        await asyncio.sleep(0.05)  # Control rotation speed
+        ws.send(data)
+        time.sleep(0.05)  # Control speed
 
-# Start WebSocket server
-async def start_server():
-    server = await websockets.serve(send_rotation, "0.0.0.0", PORT)
-    print(f"WebSocket Server Running on ws://0.0.0.0:{PORT}")
-    await server.wait_closed()  # Keep running
-
-if __name__ == "__main__":
-    asyncio.run(start_server())
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
