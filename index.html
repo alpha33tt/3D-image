@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Rotatable Fan Card</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+<script>
+    // Create the scene
+    const scene = new THREE.Scene();
+
+    // Set up camera
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 3;
+
+    // Set up renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add lighting
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(2, 2, 2).normalize();
+    scene.add(directionalLight);
+
+    // Load the image texture
+    const textureLoader = new THREE.TextureLoader();
+    const cardTexture = textureLoader.load('VVip_Friendship_Card.jpg', function(texture) {
+        console.log("Texture loaded successfully!");
+    }, undefined, function(err) {
+        console.error("Error loading texture:", err);
+    });
+
+    // Create a thin box (3D card)
+    const geometry = new THREE.BoxGeometry(2, 3, 0.1);
+    const materials = [
+        new THREE.MeshBasicMaterial({ color: 0x000000 }), // Left side
+        new THREE.MeshBasicMaterial({ color: 0x000000 }), // Right side
+        new THREE.MeshBasicMaterial({ color: 0x000000 }), // Top side
+        new THREE.MeshBasicMaterial({ color: 0x000000 }), // Bottom side
+        new THREE.MeshBasicMaterial({ map: cardTexture }), // Front (image)
+        new THREE.MeshBasicMaterial({ color: 0x111111 })  // Back (dark color)
+    ];
+    
+    const card = new THREE.Mesh(geometry, materials);
+    scene.add(card);
+
+    // Add controls for rotation
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.8;
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Handle window resizing
+    window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
+
+</script>
+
+</body>
+</html>
